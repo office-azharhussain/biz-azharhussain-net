@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { Users } from 'lucide-react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { MemberTable, type MemberRow } from '@/components/member-table'
+import { MemberAccessPolicy } from '@/components/member-access-policy'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getEntraProfile } from '@/lib/entra-profile'
@@ -18,6 +19,18 @@ export default async function MembersPage() {
     orderBy: { createdAt: 'asc' },
   })
   if (!membership) redirect('/dashboard')
+
+  const directoryAccess = await auth.api.hasPermission({
+    headers: await headers(),
+    body: { organizationId: membership.organizationId, permissions: { member: ['read'] } },
+  })
+  if (!directoryAccess.success) redirect('/dashboard')
+
+  const memberManagementAccess = await auth.api.hasPermission({
+    headers: await headers(),
+    body: { organizationId: membership.organizationId, permissions: { member: ['invite', 'changeRole', 'remove'] } },
+  })
+  const canManageMembers = memberManagementAccess.success
 
   const members = await prisma.member.findMany({
     where: { organizationId: membership.organizationId },
@@ -63,7 +76,7 @@ export default async function MembersPage() {
       designation={currentMember?.designation ?? 'Team member'}
       department={currentMember?.department ?? 'Biz'}
       profileImageSrc={currentMember?.image ?? null}
-      canManageMembers={membership.role === 'owner' || membership.role === 'admin'}
+      canManageMembers={canManageMembers}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 pb-28 pt-3">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
@@ -74,12 +87,13 @@ export default async function MembersPage() {
           </div>
           <div className="rounded-xl border border-[#dfe7e8] bg-white px-4 py-3 text-sm text-[#71848a]"><span className="font-semibold text-[#203740]">{rows.length}</span> members</div>
         </div>
-        <MemberTable members={rows} currentUserId={session.user.id} organizationId={membership.organizationId} canManage={membership.role === 'owner' || membership.role === 'admin'} />
+        <MemberAccessPolicy />
+        <MemberTable members={rows} currentUserId={session.user.id} organizationId={membership.organizationId} canManage={canManageMembers} canAssignOwner={membership.role === 'owner'} />
       </div>
     </DashboardLayout>
   )
 }
 
 function normalizeRole(role: string): MemberRow['role'] {
-  return role === 'owner' || role === 'guest' ? role : 'member'
+  return role === 'owner' || role === 'admin' || role === 'guest' ? role : 'member'
 }
