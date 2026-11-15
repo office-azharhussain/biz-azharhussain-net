@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Check, CircleDashed, Command, ShieldCheck, Zap } from 'lucide-react'
 import Link from 'next/link'
+import { BrandLogo } from '@/components/brand-logo'
 import type { ReactNode } from 'react'
 
 const authEase: [number, number, number, number] = [0.22, 1, 0.36, 1]
@@ -22,7 +23,7 @@ export function LandingShell({ children, mode }: { children: ReactNode; mode: La
       <div className="mx-auto flex min-h-screen max-w-[1440px] flex-col px-5 py-5 sm:px-8 lg:px-12">
         <header className="flex items-center justify-between border-b border-[#dfe7e8] pb-5">
           <Link href="/" className="flex items-center gap-3" aria-label="Biz home">
-            <span className="grid size-10 place-items-center rounded-xl bg-[#087f68] text-lg font-bold text-white shadow-sm">B</span>
+            <BrandLogo size={40} />
             <span className="text-lg font-semibold tracking-tight">Biz<span className="text-[#087f68]">.</span></span>
           </Link>
           <div className="hidden items-center gap-6 text-xs font-medium text-[#657981] sm:flex">

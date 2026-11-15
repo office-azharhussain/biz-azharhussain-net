@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   title: 'Biz — Business operations workspace',
   description: 'Biz is a secure business workspace for team operations, business insights, and everyday work.',
   metadataBase: new URL('https://biz.azharhussain.net'),
+  icons: {
+    icon: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/appstore.png-YJlhRvbtnvx1QCKOM7Pze212HKULd8.jpeg',
+    shortcut: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/appstore.png-YJlhRvbtnvx1QCKOM7Pze212HKULd8.jpeg',
+    apple: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/appstore.png-YJlhRvbtnvx1QCKOM7Pze212HKULd8.jpeg',
+  },
   openGraph: {
     title: 'Biz — Business operations workspace',
     description: 'A secure, connected workspace for your people, operations, and business insights.',
