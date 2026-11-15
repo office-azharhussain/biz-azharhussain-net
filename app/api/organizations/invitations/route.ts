@@ -14,7 +14,13 @@ export async function POST(request: Request) {
   if (!body?.organizationId || !email || !email.includes('@') || email.length > 320) return NextResponse.json({ error: 'Enter a valid guest email address' }, { status: 400 })
 
   const membership = await prisma.member.findUnique({ where: { organizationId_userId: { organizationId: body.organizationId, userId: session.user.id } }, include: { organization: true } })
-  if (!membership || !['owner', 'admin'].includes(membership.role)) return NextResponse.json({ error: 'Only organization owners and admins can invite guests' }, { status: 403 })
+  if (!membership) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const permission = await auth.api.hasPermission({
+    headers: await headers(),
+    body: { organizationId: membership.organizationId, permissions: { member: ['invite'] } },
+  })
+  if (!permission.success) return NextResponse.json({ error: 'Only organization owners and admins can invite guests' }, { status: 403 })
 
   const existingUser = await prisma.user.findUnique({ where: { email }, select: { id: true } })
   if (existingUser) {

@@ -3,6 +3,7 @@ import { after } from 'next/server'
 import { sso } from '@better-auth/sso'
 import { passkey } from '@better-auth/passkey'
 import { emailOTP, organization, twoFactor } from 'better-auth/plugins'
+import { organizationAccessControl, organizationRoles } from '@/lib/organization-access'
 import { sendInvitationEmail, sendPasswordResetEmail, sendVerificationCode } from '@/lib/mailer'
 import { logger } from '@/lib/logger'
 import { prismaAdapter } from '@better-auth/prisma-adapter'
@@ -68,6 +69,8 @@ export const auth = betterAuth({
       domainVerification: { enabled: true },
     }),
     organization({
+      ac: organizationAccessControl,
+      roles: organizationRoles,
       allowUserToCreateOrganization: false,
       organizationLimit: 1,
       sendInvitationEmail: async ({ id, email, organization: invitedOrganization, role }) => {
