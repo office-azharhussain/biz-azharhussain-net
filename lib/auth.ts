@@ -19,7 +19,7 @@ const developmentOrigins = [
 const authBaseURL =
   process.env.BETTER_AUTH_URL ??
   (process.env.VERCEL_ENV === 'production'
-    ? 'https://ai.chargeup.club'
+    ? 'https://biz.azharhussain.net'
     : process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
@@ -56,50 +56,16 @@ export const auth = betterAuth({
       prompt: 'select_account',
     },
   },
-  appName: 'ChargeUp AI Lab',
+  appName: 'Biz',
   plugins: [
     passkey({
-      rpName: 'ChargeUp AI Lab',
-      rpID: new URL(
-        process.env.BETTER_AUTH_URL ??
-          (process.env.VERCEL_PROJECT_PRODUCTION_URL
-            ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-            : process.env.VERCEL_URL
-              ? `https://${process.env.VERCEL_URL}`
-              : process.env.V0_RUNTIME_URL ?? 'http://localhost:3000'),
-      ).hostname,
-      origin:
-        process.env.BETTER_AUTH_URL ??
-        (process.env.VERCEL_PROJECT_PRODUCTION_URL
-          ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-          : process.env.VERCEL_URL
-            ? `https://${process.env.VERCEL_URL}`
-            : process.env.V0_RUNTIME_URL ?? 'http://localhost:3000'),
+      rpName: 'Biz',
+      rpID: new URL(authBaseURL).hostname,
+      origin: authBaseURL,
     }),
     sso({
       providersLimit: 0,
       domainVerification: { enabled: true },
-      defaultSSO: process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET && process.env.MICROSOFT_TENANT_ID
-        ? [{
-            providerId: 'chargeup-microsoft',
-            domain: 'chargeup.club',
-            oidcConfig: {
-              issuer: `https://login.microsoftonline.com/${process.env.MICROSOFT_TENANT_ID}/v2.0`,
-              clientId: process.env.MICROSOFT_CLIENT_ID,
-              clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-              discoveryEndpoint: `https://login.microsoftonline.com/${process.env.MICROSOFT_TENANT_ID}/v2.0/.well-known/openid-configuration`,
-              userInfoEndpoint: `${authBaseURL}/api/sso/microsoft-userinfo`,
-              scopes: ['openid', 'profile', 'email', 'offline_access', 'User.Read', 'Mail.Send'],
-              mapping: {
-                email: 'email',
-                emailVerified: 'email_verified',
-                name: 'name',
-              },
-              overrideUserInfo: true,
-              pkce: true,
-            },
-          }]
-        : [],
     }),
     organization({
       allowUserToCreateOrganization: false,
@@ -119,15 +85,15 @@ export const auth = betterAuth({
       },
     }),
     twoFactor({
-      issuer: 'ChargeUp AI Lab',
+      issuer: 'Biz',
       accountLockout: { enabled: true, maxFailedAttempts: 5, durationSeconds: 300 },
     }),
   ],
   trustedOrigins:
     process.env.NODE_ENV === 'development'
-      ? [...developmentOrigins, 'https://login.microsoftonline.com', 'https://graph.microsoft.com']
+      ? developmentOrigins
       : [
-          'https://ai.chargeup.club',
+          'https://biz.azharhussain.net',
           'https://login.microsoftonline.com',
           'https://graph.microsoft.com',
           ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),

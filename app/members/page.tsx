@@ -61,7 +61,7 @@ export default async function MembersPage() {
       activePage="members"
       displayName={currentMember?.name ?? session.user.name}
       designation={currentMember?.designation ?? 'Team member'}
-      department={currentMember?.department ?? 'ChargeUp AI Lab'}
+      department={currentMember?.department ?? 'Biz'}
       profileImageSrc={currentMember?.image ?? null}
       canManageMembers={membership.role === 'owner' || membership.role === 'admin'}
     >
@@ -70,9 +70,9 @@ export default async function MembersPage() {
           <div>
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mint)]"><Users className="size-3.5" />Organization</p>
             <h1 className="mt-3 font-display text-5xl tracking-wide">Members</h1>
-            <p className="mt-3 text-sm text-white/45">Manage access for {membership.organization.name}.</p>
+            <p className="mt-3 text-sm text-[#71848a]">Manage access for {membership.organization.name}.</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-[#101c27] px-4 py-3 text-sm text-white/45"><span className="font-semibold text-white">{rows.length}</span> members</div>
+          <div className="rounded-xl border border-[#dfe7e8] bg-white px-4 py-3 text-sm text-[#71848a]"><span className="font-semibold text-[#203740]">{rows.length}</span> members</div>
         </div>
         <MemberTable members={rows} currentUserId={session.user.id} organizationId={membership.organizationId} canManage={membership.role === 'owner' || membership.role === 'admin'} />
       </div>
