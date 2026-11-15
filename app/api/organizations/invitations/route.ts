@@ -2,9 +2,8 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { audit } from '@/lib/logger'
-import { getEntraAccessToken } from '@/lib/entra-profile'
-import { sendGraphInvitationEmail } from '@/lib/graph-mail'
+import { audit, logger } from '@/lib/logger'
+import { sendGraphOrganizationInvitationEmail } from '@/lib/graph-mail'
 
 export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -26,12 +25,19 @@ export async function POST(request: Request) {
   const invitation = await prisma.invitation.create({
     data: { id: crypto.randomUUID(), organizationId: membership.organizationId, email, role: 'guest', status: 'pending', expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), inviterId: session.user.id },
   })
-  const baseUrl = process.env.BETTER_AUTH_URL ?? (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+  const baseUrl = process.env.BETTER_AUTH_URL ?? (process.env.VERCEL_ENV === 'production' ? 'https://biz.azharhussain.net' : undefined) ?? (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
   const inviteUrl = `${baseUrl.replace(/\/$/, '')}/organization/accept-invitation?id=${encodeURIComponent(invitation.id)}`
-  const accessToken = await getEntraAccessToken(session.user.id)
-  const mailResult = accessToken ? await sendGraphInvitationEmail({ accessToken, to: email, organizationName: membership.organization.name, inviteUrl }) : { sent: false as const, status: 401, detail: 'Microsoft Graph Mail.Send permission is required.' }
-  const emailSent = mailResult.sent
+  let emailSent = false
+  try {
+    await sendGraphOrganizationInvitationEmail({ to: email, organizationName: membership.organization.name, role: 'guest', inviteUrl })
+    emailSent = true
+  } catch (error) {
+    logger.error('Microsoft Graph invitation delivery failed', {
+      action: 'organization.invitation.delivery_error',
+      reason: error instanceof Error ? error.message : 'Unknown error',
+    })
+  }
 
   await audit({ action: 'organization.guest_invited', message: `Invited ${email} as a guest`, userId: session.user.id, organizationId: membership.organizationId, metadata: { invitationId: invitation.id, email, role: 'guest', emailSent, mailProvider: 'microsoft-graph' } })
-  return NextResponse.json({ ok: true, emailSent, inviteUrl, message: emailSent ? 'Invitation email sent through Microsoft Graph.' : 'Invitation created. Re-authenticate with Microsoft and grant Mail.Send, or copy the invite link to share it.' })
+  return NextResponse.json({ ok: true, emailSent, inviteUrl, message: emailSent ? 'Invitation email sent through Microsoft Graph.' : 'Invitation created. Check the Microsoft 365 sender mailbox and Graph Mail.Send application permission, or copy the invite link to share it.' })
 }
